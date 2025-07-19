@@ -19,7 +19,7 @@ Inspired by [govee_h5042_sensor](https://github.com/clong/govee_h5042_sensor).
 ```
 GOVEE_AUTH_TOKEN=your_bearer_token_from_authorization_header
 GOVEE_CLIENT_ID=your_client_id_from_header
-GOVEE_DEVICE_NAME=your_device_name
+GOVEE_DEVICE_NAME=your_device_name_in_govee_app
 ```
 
 2. Install dependencies:
@@ -48,8 +48,44 @@ Example response:
 
 ## Docker
 
-Build and run:
+### Using Pre-built Image
+
+Run using the pre-built image from GitHub Container Registry:
+```bash
+docker run -p 8000:8000 \
+  -e GOVEE_AUTH_TOKEN=your_bearer_token \
+  -e GOVEE_CLIENT_ID=your_client_id \
+  -e GOVEE_DEVICE_NAME=your_device_name \
+  ghcr.io/douwem/govee-temperature:latest
+```
+
+Or with an `.env` file:
+```bash
+docker run -p 8000:8000 --env-file .env ghcr.io/douwem/govee-temperature:latest
+```
+
+### Build Locally
+
+Build and run locally:
 ```bash
 docker build -t govee-temperature .
 docker run -p 8000:8000 --env-file .env govee-temperature
 ```
+
+## Home Assistant Integration
+
+Add to your Home Assistant `configuration.yaml`:
+
+```yaml
+sensor:
+  - platform: rest
+    unique_id: jacuzzi-temperature
+    name: "Jacuzzi Temperature"
+    resource: "http://localhost:8000/temperature"
+    scan_interval: 120
+    device_class: temperature
+    unit_of_measurement: "°C"
+    value_template: "{{ value_json.temperature }}"
+```
+
+Replace the URL with your deployed API endpoint and adjust the sensor name/unique_id as needed.
