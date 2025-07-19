@@ -7,7 +7,8 @@ WORKDIR /app
 
 # Copy project files
 COPY pyproject.toml .
-COPY src/ src/
+COPY uv.lock .
+COPY govee_temperature/ govee_temperature/
 
 # Sync dependencies
 RUN uv sync --frozen
