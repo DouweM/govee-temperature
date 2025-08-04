@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Govee Temperature Setup",
+        "description": "Enter your Govee API credentials. You can get these by intercepting HTTPS traffic from the Govee mobile app.",
+        "data": {
+          "auth_token": "Authorization Bearer Token",
+          "client_id": "Client ID",
+          "scan_interval": "Update interval (seconds)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to Govee API. Check your credentials and internet connection.",
+      "invalid_auth": "Invalid authentication credentials. Please check your Bearer token and Client ID.",
+      "unknown": "Unexpected error occurred. Please check the logs."
+    },
+    "abort": {
+      "already_configured": "This Govee account is already configured."
+    }
+  }
+}

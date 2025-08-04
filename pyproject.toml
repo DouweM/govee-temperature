@@ -17,8 +17,72 @@ dependencies = [
 ]
 requires-python = ">=3.11"
 
+[project.optional-dependencies]
+dev = [
+    "pyright>=1.1.350",
+    "homeassistant>=2024.1.0",
+    "ruff>=0.1.0",
+]
+
 [project.scripts]
 govee-temperature = "govee_temperature.main:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["govee_temperature"]
+
+[tool.pyright]
+include = ["custom_components/govee_temperature", "govee_temperature"]
+pythonVersion = "3.11"
+typeCheckingMode = "basic"
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportIncompatibleVariableOverride = false
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "*.egg-info",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+    "ARG",  # flake8-unused-arguments
+    "SIM",  # flake8-simplify
+    "TCH",  # flake8-type-checking
+    "RUF",  # ruff-specific rules
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+    "ARG002", # unused method argument
+    "ARG001", # unused function argument
+    "TC001",  # type checking import
+    "TC002",  # type checking import
+    "TC003",  # type checking import
+]
+
+[tool.ruff.lint.per-file-ignores]
+"custom_components/**/*.py" = [
+    "SIM108", # use ternary operator (HA prefers explicit if/else)
+]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+known-first-party = ["govee_temperature", "custom_components"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

@@ -1,0 +1,13 @@
+{
+  "domain": "govee_temperature",
+  "name": "Govee Temperature",
+  "codeowners": ["@DouweM"],
+  "config_flow": true,
+  "documentation": "https://github.com/DouweM/govee-temperature",
+  "issue_tracker": "https://github.com/DouweM/govee-temperature/issues",
+  "iot_class": "cloud_polling",
+  "requirements": [
+    "httpx>=0.25.0"
+  ],
+  "version": "1.0.0"
+}
