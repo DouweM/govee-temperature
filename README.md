@@ -4,13 +4,14 @@
 [![License][license-shield]](LICENSE)
 [![HACS][hacsbadge]][hacs]
 
-A robust Home Assistant custom integration that provides temperature, humidity, and battery monitoring for Govee devices through the official mobile app API.
+A robust Home Assistant custom integration that provides comprehensive sensor monitoring for Govee devices through the official mobile app API, with advanced Pydantic data validation.
 
 ## ✨ Features
 
 - **🔍 Automatic Device Discovery**: Automatically finds and configures all Govee temperature/humidity sensors
-- **📊 Multi-Sensor Support**: Temperature, humidity, and battery level monitoring
-- **🎯 Entity Categories**: Battery sensors properly categorized as diagnostic entities
+- **📊 Comprehensive Sensor Support**: Temperature, humidity, battery, online status, WiFi signal, warnings, and more
+- **🔍 Enhanced Device Detection**: Discovers all devices including offline ones with Pydantic validation
+- **🎯 Smart Entity Categories**: Primary sensors and diagnostic entities properly organized
 - **🔧 Easy Configuration**: User-friendly setup through Home Assistant's config flow UI
 - **📱 Real Device Info**: Shows actual device models and hardware versions
 - **🔄 Reliable Updates**: Configurable polling with built-in error handling and authentication recovery
@@ -21,6 +22,7 @@ A robust Home Assistant custom integration that provides temperature, humidity, 
 - Home Assistant 2024.1.0 or newer
 - iOS device with Govee Home app
 - Proxyman or similar HTTPS proxy tool for credential extraction
+- Python 3.11+ (for development)
 
 ## 🚀 Installation
 
@@ -79,13 +81,30 @@ A robust Home Assistant custom integration that provides temperature, humidity, 
 
 ## 📊 Entities Created
 
-For each discovered Govee device, the integration creates:
+For each discovered Govee device, the integration creates multiple sensors based on available data:
+
+### Primary Sensors
+
+| Entity | Description | Device Class | Unit |
+|--------|-------------|--------------|------|
+| `sensor.<device_name>_temperature` | Current temperature | Temperature | °C |
+| `sensor.<device_name>_humidity` | Current humidity (handles 0.0% properly) | Humidity | % |
+
+### Diagnostic Sensors
 
 | Entity | Description | Device Class | Category |
 |--------|-------------|--------------|----------|
-| `sensor.<device_name>_temperature` | Temperature in °C | Temperature | Primary |
-| `sensor.<device_name>_humidity` | Humidity percentage | Humidity | Primary |
-| `sensor.<device_name>_battery` | Battery level percentage | Battery | Diagnostic |
+| `sensor.<device_name>_battery` | Battery level from device settings | Battery | Diagnostic |
+| `sensor.<device_name>_online_status` | Device connection status | None | Diagnostic |
+| `sensor.<device_name>_wifi_signal_level` | WiFi signal strength | Signal Strength | Diagnostic |
+| `sensor.<device_name>_temperature_warning` | Temperature alert status | None | Diagnostic |
+| `sensor.<device_name>_humidity_warning` | Humidity alert status | None | Diagnostic |
+| `sensor.<device_name>_upload_rate` | Data transmission frequency | Frequency | Diagnostic |
+| `sensor.<device_name>_power_save_mode` | Power saving state | None | Diagnostic |
+| `sensor.<device_name>_average_daily_temperature` | Daily temperature average | Temperature | Diagnostic |
+| `sensor.<device_name>_average_daily_humidity` | Daily humidity average | Humidity | Diagnostic |
+
+**Note**: Only sensors with available data are created. Offline devices still expose battery, settings, and status sensors.
 
 ## 🏷️ Supported Device Models
 
@@ -96,6 +115,7 @@ The integration automatically detects and properly identifies these Govee models
 - **H5075**: Bluetooth Thermo-Hygrometer
 - **H5101**: WiFi Thermo-Hygrometer
 - **H5102**: WiFi Thermo-Hygrometer
+- **H5109**: WiFi Thermo-Hygrometer (tested with comprehensive sensor support)
 - **H5179**: WiFi Thermo-Hygrometer
 
 *Unknown models will be detected as generic sensors with proper functionality.*
@@ -126,7 +146,7 @@ The integration automatically handles:
 
 **"No Devices Found"**:
 - Make sure you have temperature sensors in your Govee account
-- Verify the sensors are online in the Govee app
+- Devices now appear even when offline (v0.2.0+)
 - Try refreshing the device list in the Govee app
 
 **Authentication Failures**:
@@ -179,6 +199,7 @@ This project uses:
 - **[Ruff](https://docs.astral.sh/ruff/)**: Fast Python linter and formatter
 - **[Pyright](https://github.com/microsoft/pyright)**: Static type checker
 - **[uv](https://github.com/astral-sh/uv)**: Fast Python package manager
+- **[Pydantic](https://docs.pydantic.dev/)**: Data validation and parsing library
 
 ### Code Quality Standards
 
@@ -235,17 +256,22 @@ client = GoveeClient(
     client_id="your_client_id"
 )
 
-# Get all devices
+# Get all devices (now with Pydantic validation)
 devices = await client.get_devices()
 for device in devices:
     print(f"{device.name}: {device.data.temperature}°C")
+    print(f"  Battery: {device.data.battery}%")
+    print(f"  Online: {device.data.online}")
+    print(f"  WiFi: {device.data.wifi_level}")
 
-# Get specific device
+# Get specific device with comprehensive data
 device = await client.get_device_by_name("Living Room")
 if device:
     print(f"Temperature: {device.data.temperature}°C")
     print(f"Humidity: {device.data.humidity}%")
     print(f"Battery: {device.data.battery}%")
+    print(f"Online: {device.data.online}")
+    print(f"Warnings: T={device.data.temperature_warning}, H={device.data.humidity_warning}")
 ```
 
 ## 🏗️ Architecture
