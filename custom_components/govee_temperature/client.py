@@ -6,7 +6,7 @@ import httpx
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
-from govee_temperature.models import GoveeDevice
+from .models import GoveeDevice
 
 
 class GoveeClientError(Exception):

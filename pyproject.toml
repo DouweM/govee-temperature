@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "govee-temperature"
-version = "0.2.0"
+version = "0.2.1"
 description = "Govee API temperature fetcher with FastAPI endpoint"
 authors = [
     {name = "User", email = "user@example.com"},
