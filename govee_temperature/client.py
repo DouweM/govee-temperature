@@ -69,7 +69,7 @@ class GoveeClient:
         """Fetch all temperature/humidity devices from the API.
 
         Returns:
-            List of GoveeDevice objects with temperature data
+            List of GoveeDevice objects that have temperature data
 
         Raises:
             GoveeAuthenticationError: If authentication fails
@@ -89,7 +89,8 @@ class GoveeClient:
                 devices = []
                 for device_data in data.get("data", {}).get("devices", []):
                     device = GoveeDevice.from_api_response(device_data)
-                    if device:
+                    # Only include devices that have temperature data
+                    if device and device.data.temperature is not None:
                         devices.append(device)
 
                 return devices
@@ -114,15 +115,3 @@ class GoveeClient:
         """
         devices = await self.get_devices()
         return next((device for device in devices if device.name == device_name), None)
-
-    async def get_temperature(self, device_name: str) -> float | None:
-        """Get temperature for a specific device by name.
-
-        Args:
-            device_name: Name of the device
-
-        Returns:
-            Temperature in Celsius, or None if device not found or no temperature data
-        """
-        device = await self.get_device_by_name(device_name)
-        return device.data.temperature if device else None

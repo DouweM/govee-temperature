@@ -1,17 +1,14 @@
-"""Sensor platform for Govee Temperature integration."""
+"""Binary sensor platform for Govee Temperature integration."""
 
 from __future__ import annotations
 
 import logging
 
-from homeassistant.components.sensor import SensorDeviceClass
-from homeassistant.components.sensor import SensorEntity
-from homeassistant.components.sensor import SensorEntityDescription
-from homeassistant.components.sensor import SensorStateClass
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.components.binary_sensor import BinarySensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import PERCENTAGE
 from homeassistant.const import EntityCategory
-from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -23,55 +20,29 @@ from .coordinator import GoveeTemperatureCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
-    "temperature": SensorEntityDescription(
-        key="temperature",
-        device_class=SensorDeviceClass.TEMPERATURE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-    ),
-    "humidity": SensorEntityDescription(
-        key="humidity",
-        device_class=SensorDeviceClass.HUMIDITY,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
-    ),
-    "battery": SensorEntityDescription(
-        key="battery",
-        device_class=SensorDeviceClass.BATTERY,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+BINARY_SENSOR_DESCRIPTIONS: dict[str, BinarySensorEntityDescription] = {
+    "online": BinarySensorEntityDescription(
+        key="online",
+        name="Online",
+        device_class=BinarySensorDeviceClass.CONNECTIVITY,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
-    "wifi_level": SensorEntityDescription(
-        key="wifi_level",
-        name="WiFi Signal Level",
-        device_class=SensorDeviceClass.SIGNAL_STRENGTH,
-        state_class=SensorStateClass.MEASUREMENT,
+    "temperature_warning": BinarySensorEntityDescription(
+        key="temperature_warning",
+        name="Temperature Warning",
+        device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
-    "upload_rate": SensorEntityDescription(
-        key="upload_rate",
-        name="Upload Rate",
-        device_class=SensorDeviceClass.FREQUENCY,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="s",
+    "humidity_warning": BinarySensorEntityDescription(
+        key="humidity_warning",
+        name="Humidity Warning",
+        device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
-    "avg_day_temperature": SensorEntityDescription(
-        key="avg_day_temperature",
-        name="Average Daily Temperature",
-        device_class=SensorDeviceClass.TEMPERATURE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    "avg_day_humidity": SensorEntityDescription(
-        key="avg_day_humidity",
-        name="Average Daily Humidity",
-        device_class=SensorDeviceClass.HUMIDITY,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+    "power_save_mode": BinarySensorEntityDescription(
+        key="power_save_mode",
+        name="Power Save Mode",
+        device_class=BinarySensorDeviceClass.POWER,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
 }
@@ -82,43 +53,47 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Govee Temperature sensors from a config entry."""
+    """Set up Govee Temperature binary sensors from a config entry."""
     coordinator: GoveeTemperatureCoordinator = hass.data[DOMAIN][entry.entry_id]
 
-    entities: list[SensorEntity] = []
+    entities: list[BinarySensorEntity] = []
 
     for device_mac, device_data in coordinator.data.items():
         device_name = device_data["name"]
 
-        # Add sensors based on available data
-        for sensor_type, description in SENSOR_DESCRIPTIONS.items():
+        # Add binary sensors based on available data
+        for sensor_type, description in BINARY_SENSOR_DESCRIPTIONS.items():
             sensor_value = device_data.get(sensor_type)
 
-            # Include sensor if value is not None
-            # This allows False, 0, and 0.0 as valid states (e.g., 0.0% humidity)
+            # Include binary sensor if value is not None
+            # This allows False as a valid state
             if sensor_value is not None:
-                entities.append(GoveeSensor(coordinator, device_mac, device_name, description))
+                entities.append(
+                    GoveeBinarySensor(coordinator, device_mac, device_name, description)
+                )
 
     async_add_entities(entities)
 
 
-class GoveeSensor(CoordinatorEntity[GoveeTemperatureCoordinator], SensorEntity):
-    """Govee sensor entity."""
+class GoveeBinarySensor(CoordinatorEntity[GoveeTemperatureCoordinator], BinarySensorEntity):
+    """Govee binary sensor entity."""
 
     def __init__(
         self,
         coordinator: GoveeTemperatureCoordinator,
         device_mac: str,
         device_name: str,
-        description: SensorEntityDescription,
+        description: BinarySensorEntityDescription,
     ) -> None:
-        """Initialize the sensor."""
+        """Initialize the binary sensor."""
         super().__init__(coordinator)
         self.entity_description = description
         self._device_mac = device_mac
         self._device_name = device_name
         self._attr_unique_id = f"{device_mac}_{description.key}"
-        self._attr_name = f"{device_name} {description.key.title()}"
+        # Use the description name if provided, otherwise title case the key
+        display_name = description.name if description.name else description.key.replace("_", " ").title()
+        self._attr_name = f"{device_name} {display_name}"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -168,13 +143,17 @@ class GoveeSensor(CoordinatorEntity[GoveeTemperatureCoordinator], SensorEntity):
         device_data = self.coordinator.data[self._device_mac]
         sensor_value = device_data.get(self.entity_description.key)
 
-        # Sensor is available if value is not None
+        # Binary sensors are available if explicitly set (including False)
         return sensor_value is not None
 
     @property
-    def native_value(self) -> float | int | None:
-        """Return the sensor value."""
+    def is_on(self) -> bool | None:
+        """Return true if the binary sensor is on."""
         if self._device_mac not in self.coordinator.data:
             return None
 
-        return self.coordinator.data[self._device_mac].get(self.entity_description.key)
+        sensor_value = self.coordinator.data[self._device_mac].get(self.entity_description.key)
+
+        # Return the boolean value directly
+        # None means unavailable, False means off, True means on
+        return sensor_value

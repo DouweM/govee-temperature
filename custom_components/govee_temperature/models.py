@@ -191,7 +191,9 @@ class GoveeDevice:
 
         # Build comprehensive device data
         self.data = DeviceData(
-            temperature=self._convert_temperature(last_device_data.tem if last_device_data else None),
+            temperature=self._convert_temperature(
+                last_device_data.tem if last_device_data else None
+            ),
             humidity=self._convert_humidity(last_device_data.hum if last_device_data else None),
             battery=device_settings.battery if device_settings else None,
             online=last_device_data.online if last_device_data else None,
@@ -201,12 +203,16 @@ class GoveeDevice:
             upload_rate=device_settings.upload_rate if device_settings else None,
             power_save_mode=device_settings.power_save_mode_state if device_settings else None,
             last_seen=last_device_data.last_time if last_device_data else None,
-            avg_day_temperature=self._convert_temperature(last_device_data.avg_day_tem if last_device_data else None),
-            avg_day_humidity=self._convert_humidity(last_device_data.avg_day_hum if last_device_data else None),
+            avg_day_temperature=self._convert_temperature(
+                last_device_data.avg_day_tem if last_device_data else None
+            ),
+            avg_day_humidity=self._convert_humidity(
+                last_device_data.avg_day_hum if last_device_data else None
+            ),
             raw_data={
                 "device_settings": device_settings.__dict__ if device_settings else None,
                 "last_device_data": last_device_data.__dict__ if last_device_data else None,
-            }
+            },
         )
 
     @classmethod

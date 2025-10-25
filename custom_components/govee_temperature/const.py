@@ -24,5 +24,6 @@ DEVICE_MODELS: Final = {
     "H5075": "Bluetooth Thermo-Hygrometer",
     "H5101": "WiFi Thermo-Hygrometer",
     "H5102": "WiFi Thermo-Hygrometer",
+    "H5109": "WiFi Thermo-Hygrometer",
     "H5179": "WiFi Thermo-Hygrometer",
 }

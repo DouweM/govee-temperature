@@ -73,7 +73,8 @@ class GoveeClient:
                 devices = []
                 for device_data in data.get("data", {}).get("devices", []):
                     device = GoveeDevice.from_api_response(device_data)
-                    if device:
+                    # Only include devices that have temperature data
+                    if device and device.data.temperature is not None:
                         devices.append(device)
 
                 return devices

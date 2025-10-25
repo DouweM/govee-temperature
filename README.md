@@ -229,7 +229,6 @@ The integration includes a standalone web API for non-Home Assistant usage.
 # Set environment variables
 export GOVEE_AUTH_TOKEN="your_bearer_token"
 export GOVEE_CLIENT_ID="your_client_id"
-export GOVEE_DEVICE_NAME="your_device_name"  # Optional, for /temperature endpoint
 
 # Install and run
 uv sync
@@ -240,8 +239,7 @@ uv run govee-temperature
 
 | Endpoint | Description | Response |
 |----------|-------------|----------|
-| `GET /temperature` | Get temperature from configured device | `{"temperature": 23.45}` |
-| `GET /devices` | List all temperature/humidity devices | Array of device objects |
+| `GET /devices` | List all temperature/humidity devices | Array of device objects with sensor data |
 | `GET /device/{name}` | Get specific device by name | Device object with all sensor data |
 | `GET /health` | Health check | `{"status": "healthy"}` |
 

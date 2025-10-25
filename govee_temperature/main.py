@@ -38,50 +38,12 @@ def _get_client() -> GoveeClient:
     return GoveeClient(auth_token=auth_token, client_id=client_id)
 
 
-@app.get("/temperature")
-async def get_temperature():
-    """Get current temperature from the configured Govee device.
-
-    Requires environment variables:
-    - GOVEE_AUTH_TOKEN: Bearer token for authentication
-    - GOVEE_CLIENT_ID: Client ID for API requests
-    - GOVEE_DEVICE_NAME: Name of the device to fetch temperature from
-
-    Returns:
-        JSON response with temperature in Celsius
-    """
-    device_name = os.getenv("GOVEE_DEVICE_NAME")
-    if not device_name:
-        raise HTTPException(
-            status_code=500, detail="Missing required environment variable: GOVEE_DEVICE_NAME"
-        )
-
-    try:
-        client = _get_client()
-        temperature = await client.get_temperature(device_name)
-
-        if temperature is not None:
-            return {"temperature": temperature}
-        else:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Device '{device_name}' not found or has no temperature data",
-            )
-
-    except GoveeAuthenticationError as e:
-        raise HTTPException(status_code=401, detail=str(e)) from e
-    except GoveeConnectionError as e:
-        raise HTTPException(status_code=503, detail=str(e)) from e
-    except GoveeClientError as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
-
-
 @app.get("/devices")
 async def get_devices():
-    """Get all available Govee temperature/humidity devices.
+    """Get all available Govee devices with temperature sensors.
 
     Returns:
-        JSON response with list of devices and their current sensor data
+        JSON response with list of devices that have temperature data
     """
     try:
         client = _get_client()
