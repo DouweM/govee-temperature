@@ -24,9 +24,9 @@ class GoveeClient:
 
     DEFAULT_API_URL = "https://app2.govee.com/bff-app/v1/device/list"
     DEFAULT_USER_AGENT = (
-        "GoveeHome/7.0.12 (com.ihoment.GoVeeSensor; build:3; iOS 18.5.0) Alamofire/5.6.4"
+        "GoveeHome/7.1.31 (com.ihoment.GoVeeSensor; build:2; iOS 26.0.0) Alamofire/5.6.4"
     )
-    DEFAULT_APP_VERSION = "7.0.12"
+    DEFAULT_APP_VERSION = "7.1.31"
     DEFAULT_TIMEOUT = 30
 
     def __init__(
