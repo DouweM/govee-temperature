@@ -13,7 +13,9 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
+from .client import GoveeAuthenticationError
 from .client import GoveeClient
+from .client import GoveeConnectionError
 from .const import CONF_AUTH_TOKEN
 from .const import CONF_CLIENT_ID
 from .const import DEFAULT_SCAN_INTERVAL
@@ -37,6 +39,7 @@ class GoveeTemperatureCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=entry,
             name=DOMAIN,
             update_interval=timedelta(seconds=scan_interval),
         )
@@ -71,8 +74,9 @@ class GoveeTemperatureCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             _LOGGER.debug("Processed %d temperature devices", len(processed_devices))
             return processed_devices
 
-        except (ConfigEntryAuthFailed, UpdateFailed):
-            # Re-raise HA exceptions as-is
-            raise
+        except GoveeAuthenticationError as err:
+            raise ConfigEntryAuthFailed(str(err)) from err
+        except GoveeConnectionError as err:
+            raise UpdateFailed(str(err)) from err
         except Exception as err:
             raise UpdateFailed(f"Unexpected error: {err}") from err
