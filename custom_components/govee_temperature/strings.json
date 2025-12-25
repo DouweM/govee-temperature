@@ -9,6 +9,13 @@
           "client_id": "Client ID",
           "scan_interval": "Update interval (seconds)"
         }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate Govee Temperature",
+        "description": "Your authentication token has expired. Please enter a new token to restore the connection.",
+        "data": {
+          "auth_token": "Authorization Bearer Token"
+        }
       }
     },
     "error": {
@@ -17,7 +24,8 @@
       "unknown": "Unexpected error occurred. Please check the logs."
     },
     "abort": {
-      "already_configured": "This Govee account is already configured."
+      "already_configured": "This Govee account is already configured.",
+      "reauth_successful": "Re-authentication successful."
     }
   }
 }

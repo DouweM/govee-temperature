@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import httpx
-from homeassistant.exceptions import ConfigEntryAuthFailed
-from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from .models import GoveeDevice
 
@@ -65,7 +63,7 @@ class GoveeClient:
                 response = await client.get(self.api_url, headers=self._headers)
 
                 if response.status_code == 401:
-                    raise ConfigEntryAuthFailed("Authentication failed")
+                    raise GoveeAuthenticationError("Authentication failed")
 
                 response.raise_for_status()
                 data = response.json()
@@ -81,9 +79,7 @@ class GoveeClient:
 
         except httpx.HTTPStatusError as err:
             if err.response.status_code == 401:
-                raise ConfigEntryAuthFailed("Authentication failed") from err
-            raise UpdateFailed(f"HTTP error: {err.response.status_code}") from err
+                raise GoveeAuthenticationError("Authentication failed") from err
+            raise GoveeConnectionError(f"HTTP error: {err.response.status_code}") from err
         except httpx.RequestError as err:
-            raise UpdateFailed(f"Connection error: {err}") from err
-        except Exception as err:
-            raise UpdateFailed(f"Unexpected error: {err}") from err
+            raise GoveeConnectionError(f"Connection error: {err}") from err

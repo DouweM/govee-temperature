@@ -8,6 +8,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
+from .const import CONF_CLIENT_ID
 from .const import DOMAIN
 from .coordinator import GoveeTemperatureCoordinator
 
@@ -19,6 +20,15 @@ PLATFORMS: list[Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR]
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Govee Temperature from a config entry."""
     _LOGGER.debug("Setting up Govee Temperature integration")
+
+    # Migrate entries without unique_id (required for reauth flow)
+    if entry.unique_id is None:
+        client_id = entry.data.get(CONF_CLIENT_ID)
+        if client_id:
+            hass.config_entries.async_update_entry(
+                entry, unique_id=f"govee_temperature_{client_id}"
+            )
+            _LOGGER.debug("Migrated config entry to add unique_id")
 
     coordinator = GoveeTemperatureCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()

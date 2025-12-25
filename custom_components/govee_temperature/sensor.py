@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import logging
 
-from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
-from homeassistant.components.sensor import SensorStateClass
+from homeassistant.components.sensor.const import SensorDeviceClass
+from homeassistant.components.sensor.const import SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import PERCENTAGE
 from homeassistant.const import EntityCategory
@@ -46,14 +46,13 @@ SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
     "wifi_level": SensorEntityDescription(
         key="wifi_level",
         name="WiFi Signal Level",
-        device_class=SensorDeviceClass.SIGNAL_STRENGTH,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "upload_rate": SensorEntityDescription(
         key="upload_rate",
         name="Upload Rate",
-        device_class=SensorDeviceClass.FREQUENCY,
+        device_class=SensorDeviceClass.DURATION,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="s",
         entity_category=EntityCategory.DIAGNOSTIC,
