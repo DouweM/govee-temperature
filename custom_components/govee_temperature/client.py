@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import logging
+
 import httpx
 
 from .models import GoveeDevice
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class GoveeClientError(Exception):
@@ -67,6 +71,13 @@ class GoveeClient:
 
                 response.raise_for_status()
                 data = response.json()
+
+                # Check for auth errors in response body (API returns HTTP 200 with status 401)
+                response_status = data.get("status")
+                if response_status == 401:
+                    message = data.get("message", "Authentication failed")
+                    _LOGGER.debug("API returned auth error: %s", message)
+                    raise GoveeAuthenticationError(message)
 
                 devices = []
                 for device_data in data.get("data", {}).get("devices", []):
